@@ -4,9 +4,9 @@
   const orderEmail = 'abolarinwaibraheem@gmail.com';
   const storageKey = 'mist-bloom-bag-v1';
   const packages = {
-    fresh: { name: 'Fresh Start', price: 13500, image: 'assets/products/bundle-fresh-mobile.jpg', contents: '1 mini humidifier + 1 lemon aroma oil' },
-    double: { name: 'Double Refresh', price: 24500, image: 'assets/products/bundle-double-mobile.jpg', contents: '2 mini humidifiers + 1 lemon oil + 1 strawberry oil' },
-    ultimate: { name: 'Ultimate Refresh', price: 34500, image: 'assets/products/bundle-ultimate-mobile.jpg', contents: '3 mini humidifiers + 2 lemon oils + 2 strawberry oils' }
+    fresh: { name: 'Fresh Start', price: 20000, image: 'assets/products/package-one.jpg', contents: '1 mini humidifier + 1 free Mango or Strawberry fragrance oil (customer chooses scent)' },
+    double: { name: 'Double Refresh', price: 38000, image: 'assets/products/package-two.jpg', contents: '2 mini humidifiers + 2 free fragrance oils (customer chooses scents)' },
+    ultimate: { name: 'Ultimate Refresh', price: 55000, image: 'assets/products/package-three.jpg', contents: '3 mini humidifiers + 3 free fragrance oils (customer chooses scents)' }
   };
   const money = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
   const formatMoney = value => `NGN ${money.format(value)}`;
@@ -156,6 +156,7 @@
       `Alternative number: ${phone}`,
       `State: ${data.get('state')}`,
       `Delivery address: ${data.get('address')}`,
+      `Oil scent choice: ${String(data.get('scents') || '').trim() || 'Please confirm with customer'}`,
       `Preferred receiving date: ${receivedDate}`,
       '', 'Packages:', ...lineItems,
       `Subtotal: ${formatMoney(cartTotal())}`,
@@ -178,6 +179,24 @@
   document.querySelectorAll('a[data-close-cart]').forEach(link => link.addEventListener('click', closeCart));
   document.querySelector('#year').textContent = String(new Date().getFullYear());
   renderCart();
+
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const revealTargets = document.querySelectorAll('.hero-copy, .hero-media-wrap, .trust-strip, .section-heading, .benefit-card, .feature-photo-card, .package-heading, .package-card, .fragrance-heading, .fragrance-card, .showcase-copy, .showcase-photo, .video-section-copy, .demo-frame, .video-extra, .how-heading, .how-content, .last-call > div, .faq-heading, .faq-list');
+    revealTargets.forEach((element, index) => {
+      element.classList.add('reveal');
+      if (element.matches('.benefit-card, .package-card, .fragrance-card')) element.classList.add(`reveal-delay-${(index % 3) + 1}`);
+    });
+    document.documentElement.classList.add('motion-ready');
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+    revealTargets.forEach(element => revealObserver.observe(element));
+  }
 
   const videos = document.querySelectorAll('video[data-autoplay]');
   const soundButton = video => video.closest('.video-frame').querySelector('.sound-toggle');
