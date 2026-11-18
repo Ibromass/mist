@@ -4,9 +4,9 @@
   const orderEmail = 'abolarinwaibraheem@gmail.com';
   const storageKey = 'mist-bloom-bag-v1';
   const packages = {
-    fresh: { name: 'Fresh Start', price: 20000, image: 'assets/products/package-one.jpg', contents: '1 mini humidifier + 1 free Mango or Strawberry fragrance oil (customer chooses scent)' },
-    double: { name: 'Double Refresh', price: 38000, image: 'assets/products/package-two.jpg', contents: '2 mini humidifiers + 2 free fragrance oils (customer chooses scents)' },
-    ultimate: { name: 'Ultimate Refresh', price: 55000, image: 'assets/products/package-three.jpg', contents: '3 mini humidifiers + 3 free fragrance oils (customer chooses scents)' }
+    fresh: { name: 'Fresh Start', price: 20000, image: 'assets/products/package-one.jpg', contents: '1 mini humidifier + 1 free Mango fragrance oil' },
+    double: { name: 'Double Refresh', price: 38000, image: 'assets/products/package-two.jpg', contents: '2 mini humidifiers + 1 Mango and 1 Strawberry fragrance oil' },
+    ultimate: { name: 'Ultimate Refresh', price: 55000, image: 'assets/products/package-three.jpg', contents: '3 mini humidifiers + 2 Mango and 1 Strawberry fragrance oil' }
   };
   const money = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
   const formatMoney = value => `NGN ${money.format(value)}`;
@@ -133,7 +133,7 @@
     }
   });
 
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
     errorNode.textContent = '';
     if (!form.reportValidity()) return;
@@ -148,32 +148,47 @@
     const reference = `MB-${Date.now().toString(36).toUpperCase()}`;
     const lineItems = Object.entries(cart).map(([id, quantity]) => `- ${packages[id].name} x ${quantity} (${packages[id].contents}) - ${formatMoney(packages[id].price * quantity)}`);
     const receivedDate = new Intl.DateTimeFormat('en-NG', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${data.get('date')}T12:00:00`));
-    const body = [
-      'MIST & BLOOM ORDER REQUEST',
-      `Reference: ${reference}`,
-      `Customer: ${data.get('name')}`,
-      `WhatsApp: ${whatsapp}`,
-      `Alternative number: ${phone}`,
-      `State: ${data.get('state')}`,
-      `Delivery address: ${data.get('address')}`,
-      `Oil scent choice: ${String(data.get('scents') || '').trim() || 'Please confirm with customer'}`,
-      `Preferred receiving date: ${receivedDate}`,
-      '', 'Packages:', ...lineItems,
-      `Subtotal: ${formatMoney(cartTotal())}`,
-      'Delivery: Free',
-      '', 'Please confirm availability and delivery arrangements with the customer.'
-    ].join('\n');
     const subject = `MIST & BLOOM order request ${reference}`;
-    const emailUrl = `mailto:${orderEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    document.querySelector('.email-fallback').href = emailUrl;
-    form.hidden = true;
-    document.querySelector('.order-ready').hidden = false;
-    document.querySelector('.order-ready h2').focus?.();
-    window.location.href = emailUrl;
-  });
+    const submitButton = form.querySelector('.submit-order');
+    const originalButton = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending order…';
 
-  document.querySelector('.email-fallback').addEventListener('click', () => {
-    document.querySelector('.order-ready').hidden = false;
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${orderEmail}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _url: window.location.href,
+          _subject: subject,
+          _template: 'table',
+          Reference: reference,
+          Customer: String(data.get('name')).trim(),
+          WhatsApp: whatsapp,
+          'Alternative number': phone,
+          State: String(data.get('state')).trim(),
+          'Delivery address': String(data.get('address')).trim(),
+          'Preferred receiving date': receivedDate,
+          Packages: lineItems.join('\n'),
+          Subtotal: formatMoney(cartTotal()),
+          Delivery: 'Free'
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || String(result.success).toLowerCase() !== 'true') {
+        throw new Error(result.message || 'Order submission failed');
+      }
+
+      try { sessionStorage.setItem('mist-bloom-order-reference', reference); } catch (_) { /* The confirmation page still works without storage. */ }
+      window.location.assign('thank-you.html');
+    } catch (error) {
+      const serviceMessage = error instanceof Error ? error.message : '';
+      errorNode.textContent = serviceMessage && serviceMessage !== 'Order submission failed'
+        ? `We couldn’t send your order. ${serviceMessage}`
+        : 'We couldn’t send your order just now. Please check your connection and try again.';
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalButton;
+    }
   });
 
   document.querySelectorAll('a[data-close-cart]').forEach(link => link.addEventListener('click', closeCart));
