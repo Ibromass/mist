@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aroma Mist &amp; Bloom — Ad maker</title>
+  <style>
+    :root{color-scheme:light;--ink:#173b32;--cream:#f7f3e8;--sage:#dce8dc;--gold:#d9a451;--muted:#597267}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#edf1e9;color:var(--ink);font:16px/1.5 "Segoe UI",Arial,sans-serif;display:grid;place-items:center;padding:24px}
+    main{width:min(100%,570px);text-align:center}h1{font-size:28px;line-height:1.15;margin:0 0 8px}p{margin:0 0 18px;color:#4a6258}
+    canvas{width:min(100%,360px);aspect-ratio:9/16;background:var(--cream);border-radius:24px;box-shadow:0 22px 60px #173b3226;display:block;margin:0 auto 18px}
+    button{border:0;border-radius:999px;background:var(--ink);color:white;padding:16px 30px;font:700 17px "Segoe UI",Arial,sans-serif;cursor:pointer;box-shadow:0 8px 20px #173b3230}button:disabled{opacity:.6;cursor:wait}
+    #status{min-height:26px;margin-top:12px;font-weight:600;color:var(--ink)}.small{font-size:13px;color:#63776f;margin-top:10px}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Aroma Mist &amp; Bloom</h1>
+  <p>20-second vertical ad • made with your product footage • no paid generator</p>
+  <canvas id="ad" width="720" height="1280" aria-label="Video preview"></canvas>
+  <button id="export">Create and download the video</button>
+  <div id="status" role="status">Preview ready. Press the button to export.</div>
+  <div class="small">Export format: WebM (vertical 9:16). Keep this page open until the download finishes.</div>
+</main>
+<script>
+(() => {
+  const W=720,H=1280,FPS=30,canvas=document.querySelector('#ad'),ctx=canvas.getContext('2d');
+  const ROOT='../assets/products/';
+  const videos=['humidifier.mp4','humid2.mp4','humid3.mp4'].map(name=>{const v=document.createElement('video');v.src=ROOT+name;v.muted=true;v.playsInline=true;v.preload='auto';v.crossOrigin='anonymous';return v});
+  const photos=['package-one.jpg','package-two.jpg','package-three.jpg'].map(name=>{const i=new Image();i.src=ROOT+name;return i});
+  const scenes=[
+    {type:'video',video:0,duration:4.2},
+    {type:'video',video:1,duration:3.8},
+    {type:'video',video:2,duration:3.8},
+    {type:'packages',duration:5},
+    {type:'video',video:0,duration:3.8}
+  ];
+  const ink='#173b32',cream='#f7f3e8',gold='#d9a451',sage='#dce8dc',muted='#536c60',white='#fffdf8';
+  const status=document.querySelector('#status'),button=document.querySelector('#export');
+  let currentScene=0, previewTime=0, previewFrame=0;
+  function roundRect(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill()}
+  function text(str,x,y,size,color=ink,weight=700,align='left',maxWidth=650){ctx.font=`${weight} ${size}px "Segoe UI",Arial,sans-serif`;ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline='alphabetic';ctx.fillText(str,x,y,maxWidth)}
+  function wrap(str,x,y,maxWidth,lineHeight,size,color=ink,weight=700){ctx.font=`${weight} ${size}px "Segoe UI",Arial,sans-serif`;ctx.fillStyle=color;ctx.textAlign='left';ctx.textBaseline='alphabetic';let line='',yy=y;for(const word of str.split(' ')){const next=line?line+' '+word:word;if(ctx.measureText(next).width>maxWidth&&line){ctx.fillText(line,x,yy);line=word;yy+=lineHeight}else line=next}if(line)ctx.fillText(line,x,yy);return yy}
+  function bg(t){const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,cream);g.addColorStop(.64,'#eef0df');g.addColorStop(1,sage);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.globalAlpha=.2;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(655,140,205+Math.sin(t)*10,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
+  function brand(){text('AROMA',48,73,20,muted,700);text('MIST & BLOOM',48,112,33,ink,800);roundRect(48,130,58,5,3,gold)}
+  function videoPanel(v, y=365, h=600, t=0){
+    const x=32,w=656;roundRect(x,y,w,h,34,'#ffffff');
+    ctx.save();ctx.beginPath();ctx.roundRect(x+9,y+9,w-18,h-18,28);ctx.clip();
+    ctx.fillStyle='#e7eee4';ctx.fillRect(x+9,y+9,w-18,h-18);
+    if(v.readyState>=2&&v.videoWidth){const sw=v.videoWidth,sh=v.videoHeight,boxW=w-18,boxH=h-18,scale=Math.min(boxW/sw,boxH/sh),dw=sw*scale,dh=sh*scale;ctx.drawImage(v,x+9+(boxW-dw)/2,y+9+(boxH-dh)/2,dw,dh)}
+    ctx.restore();
+    const shade=ctx.createLinearGradient(0,y+h-175,0,y+h);shade.addColorStop(0,'#173b3200');shade.addColorStop(1,'#173b32a8');ctx.fillStyle=shade;ctx.beginPath();ctx.roundRect(x+9,y+9,w-18,h-18,28);ctx.fill();
+    roundRect(52,y+25,170,42,21,'#fffdf0e8');text('GENTLE MIST',137,y+54,16,ink,800,'center');
+  }
+  function drawPackageScene(t){
+    bg(t);brand();text('Pick your bundle.',48,196,48,ink,800);text('Every bundle comes with free delivery.',48,237,21,muted,600);
+    const rows=[
+      {img:photos[0],name:'1 diffuser + 1 oil',price:'₦20,000',y:283},
+      {img:photos[1],name:'2 diffusers + 2 oils',price:'₦38,000',y:560},
+      {img:photos[2],name:'3 diffusers + 3 oils',price:'₦55,000',y:837}
+    ];
+    for(const r of rows){roundRect(32,r.y,656,246,28,white);roundRect(48,r.y+16,190,214,20,'#f0f1e8');if(r.img.complete&&r.img.naturalWidth){const iw=r.img.naturalWidth,ih=r.img.naturalHeight,s=Math.min(174/iw,196/ih);ctx.drawImage(r.img,145-iw*s/2,r.y+123-ih*s/2,iw*s,ih*s)}text(r.name,263,r.y+96,25,ink,700);text(r.price,263,r.y+165,39,ink,800);text('FREE DELIVERY',263,r.y+205,17,muted,800)}
+    roundRect(32,1132,656,74,37,ink);text('OILS INCLUDED • FREE DELIVERY',360,1178,21,white,800,'center');
+  }
+  function drawScene(index,localT,absoluteT){
+    bg(absoluteT);brand();const fade=Math.min(1,localT/.32);ctx.globalAlpha=fade;
+    if(index===0){text('A FRESHER',48,207,62,ink,800);text('WELCOME.',48,278,62,ink,800);text('Even when visitors drop by unannounced.',50,322,24,muted,600);videoPanel(videos[0],365,690,absoluteT);text('A pleasant way to keep your space smelling fresh.',48,1122,21,ink,600)}
+    if(index===1){text('One diffuser.',48,206,53,ink,800);text('More welcoming rooms.',48,267,46,ink,800);videoPanel(videos[1],310,480,absoluteT);roundRect(32,824,656,292,27,white);text('SITTING ROOM',60,889,27,ink,800);text('DINING',384,889,27,ink,800);text('BEDROOM',60,969,27,ink,800);text('OFFICE',384,969,27,ink,800);text('Made for the spaces you use every day.',60,1062,21,muted,600)}
+    if(index===2){text('Add water.',48,207,59,ink,800);text('Connect USB.',48,275,53,ink,800);text('Switch it on.',48,338,53,ink,800);videoPanel(videos[2],385,625,absoluteT);text('Enjoy a gentle mist—without manual spraying.',48,1084,22,ink,650)}
+    if(index===3) drawPackageScene(absoluteT);
+    if(index===4){text('Keep your',48,214,56,ink,800);text('welcome ready.',48,279,56,ink,800);text('Aroma Mist & Bloom',50,326,24,muted,650);videoPanel(videos[0],370,580,absoluteT);roundRect(32,1000,656,130,28,ink);text('ORDER NOW',360,1055,34,white,800,'center');text('FREE DELIVERY ON ALL PACKAGES',360,1097,19,'#f4d48e',800,'center');text('Choose 1, 2 or 3 diffusers with oils included.',48,1185,19,ink,650)}
+    ctx.globalAlpha=1;
+  }
+  function locate(t){let n=t;for(let i=0;i<scenes.length;i++){if(n<scenes[i].duration)return[i,n];n-=scenes[i].duration}return[scenes.length-1,scenes.at(-1).duration]}
+  function preview(){const t=(performance.now()-previewTime)/1000;const [i,local]=locate(t%20.6);drawScene(i,local,t);previewFrame=requestAnimationFrame(preview)}
+  async function waitReady(){await Promise.all(videos.map(v=>new Promise(resolve=>{if(v.readyState>=2)return resolve();const done=()=>resolve();v.addEventListener('loadeddata',done,{once:true});v.addEventListener('error',done,{once:true});setTimeout(done,12000)})));await Promise.all(photos.map(i=>i.complete?Promise.resolve():new Promise(resolve=>{i.onload=resolve;i.onerror=resolve;setTimeout(resolve,10000)})))}
+  function startVideo(v){try{v.pause();v.currentTime=0}catch{}return v.play().catch(()=>{})}
+  async function exportVideo(){
+    button.disabled=true;status.textContent='Loading your product footage…';await waitReady();cancelAnimationFrame(previewFrame);
+    for(const v of videos){v.muted=true;v.pause();try{v.currentTime=0}catch{}}
+    const stream=canvas.captureStream(FPS);let mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm;codecs=vp8';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
+    const recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6500000});const chunks=[];recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+    const finished=new Promise(resolve=>recorder.onstop=resolve);recorder.start(1000);status.textContent='Recording the 20-second ad…';
+    let elapsed=0;for(let i=0;i<scenes.length;i++){
+      const scene=scenes[i],v=scene.type==='video'?videos[scene.video]:null;if(v)startVideo(v);
+      const from=performance.now();while(performance.now()-from<scene.duration*1000){const local=(performance.now()-from)/1000;drawScene(i,local,elapsed+local);await new Promise(requestAnimationFrame)}if(v)v.pause();elapsed+=scene.duration;
+    }
+    recorder.stop();await finished;stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='aroma-mist-bloom-vertical-ad.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    status.textContent=`Done — ${Math.round(blob.size/1024/1024*10)/10} MB downloaded. Check your Downloads folder.`;button.textContent='Create another copy';button.disabled=false;previewTime=performance.now();preview();
+  }
+  button.addEventListener('click',()=>exportVideo().catch(e=>{console.error(e);status.textContent='Export stopped. Reload this page and try once more.';button.disabled=false;previewTime=performance.now();preview()}));
+  previewTime=performance.now();preview();
+})();
+</script>
+</body>
+</html>

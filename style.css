@@ -781,3 +781,38 @@ body.thank-you-page { min-height: 100vh; display: flex; flex-direction: column; 
   .thank-you-delivery { font-size: 14px; }
   .thank-you-card > .button { width: 100%; margin-top: 20px; }
 }
+
+.thank-you-card { width: min(100%, 960px); grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); justify-items: stretch; align-items: stretch; overflow: hidden; padding: 0; text-align: left; }
+.thank-you-visual { position: relative; min-height: 490px; overflow: hidden; background: linear-gradient(145deg, #e1efeb, #f4eddb); }
+.thank-you-visual img { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; object-position: center; }
+.thank-you-free-delivery { position: absolute; left: 20px; bottom: 20px; border: 1px solid rgba(255,255,255,.8); border-radius: 999px; padding: 9px 14px; background: rgba(255,255,255,.93); color: var(--forest); font-size: 12px; font-weight: 800; letter-spacing: .09em; box-shadow: 0 7px 22px rgba(18,59,70,.12); }
+.thank-you-content { align-self: center; display: grid; justify-items: start; padding: clamp(30px, 5vw, 58px); }
+.thank-you-mark { width: 58px; margin: 0 0 20px; }
+.thank-you-content .eyebrow { font-size: 11px; letter-spacing: .13em; }
+.thank-you-content h1 { font-size: clamp(39px, 5vw, 58px); line-height: 1.02; }
+.thank-you-content .thank-you-message { max-width: 430px; font-size: 18px; }
+.thank-you-content .thank-you-reference { justify-self: stretch; margin-top: 19px; }
+.thank-you-content .thank-you-delivery { max-width: 400px; margin: 16px 0 20px; }
+.thank-you-actions { width: 100%; display: grid; gap: 12px; }
+.thank-you-whatsapp { width: 100%; min-height: 56px; justify-content: center; gap: 10px; border-radius: 9px; background: #168c59; color: #fff; font-size: 15px; box-shadow: 0 9px 20px rgba(22,140,89,.18); }
+.thank-you-whatsapp:hover { background: #11784b; }
+.thank-you-whatsapp svg { width: 21px; height: 21px; fill: currentColor; }
+.thank-you-back { justify-self: center; padding: 7px 10px; color: var(--forest-2); font-size: 15px; font-weight: 750; text-decoration: none; }
+.thank-you-back:hover { text-decoration: underline; text-underline-offset: 4px; }
+.thank-you-footer { font-size: 18px; }
+.room-chips { display: flex; flex-wrap: wrap; gap: 9px; margin: -10px 0 28px; }
+.room-chips span { display: inline-flex; align-items: center; min-height: 42px; border: 1px solid #c5dcda; border-radius: 999px; padding: 7px 15px; background: #fff; color: var(--forest); font-size: 15px; font-weight: 700; box-shadow: 0 4px 12px rgba(18,59,70,.04); }
+@media (max-width: 650px) {
+  .thank-you-card { grid-template-columns: 1fr; }
+  .thank-you-visual { min-height: 0; height: 260px; }
+  .thank-you-visual img { object-position: center 58%; }
+  .thank-you-free-delivery { left: 14px; bottom: 14px; }
+  .thank-you-content { padding: 27px 22px 24px; }
+  .thank-you-mark { width: 50px; margin-bottom: 15px; font-size: 27px; }
+  .thank-you-content h1 { font-size: clamp(37px, 10vw, 48px); }
+  .thank-you-content .thank-you-message { font-size: 16px; }
+  .thank-you-content .thank-you-delivery { font-size: 14px; }
+  .thank-you-whatsapp { min-height: 54px; font-size: 14px; }
+  .room-chips { gap: 7px; margin: -8px 0 20px; }
+  .room-chips span { min-height: 38px; padding: 6px 11px; font-size: 13px; }
+}

@@ -4,9 +4,9 @@
   const orderEmail = 'abolarinwaibraheem@gmail.com';
   const storageKey = 'mist-bloom-bag-v1';
   const packages = {
-    fresh: { name: 'Fresh Start', price: 20000, image: 'assets/products/package-one.jpg', contents: '1 mini humidifier + 1 free Mango fragrance oil' },
-    double: { name: 'Double Refresh', price: 38000, image: 'assets/products/package-two.jpg', contents: '2 mini humidifiers + 1 Mango and 1 Strawberry fragrance oil' },
-    ultimate: { name: 'Ultimate Refresh', price: 55000, image: 'assets/products/package-three.jpg', contents: '3 mini humidifiers + 2 Mango and 1 Strawberry fragrance oil' }
+    fresh: { name: 'Fresh Start', price: 20000, image: 'assets/products/package-one.jpg', contents: '1 Aroma Mist & Bloom diffuser + 1 free Mango fragrance oil' },
+    double: { name: 'Double Refresh', price: 38000, image: 'assets/products/package-two.jpg', contents: '2 Aroma Mist & Bloom diffusers + 1 Mango and 1 Strawberry fragrance oil' },
+    ultimate: { name: 'Ultimate Refresh', price: 55000, image: 'assets/products/package-three.jpg', contents: '3 Aroma Mist & Bloom diffusers + 2 Mango and 1 Strawberry fragrance oil' }
   };
   const money = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
   const formatMoney = value => `NGN ${money.format(value)}`;
@@ -148,7 +148,7 @@
     const reference = `MB-${Date.now().toString(36).toUpperCase()}`;
     const lineItems = Object.entries(cart).map(([id, quantity]) => `- ${packages[id].name} x ${quantity} (${packages[id].contents}) - ${formatMoney(packages[id].price * quantity)}`);
     const receivedDate = new Intl.DateTimeFormat('en-NG', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${data.get('date')}T12:00:00`));
-    const subject = `MIST & BLOOM order request ${reference}`;
+    const subject = `Aroma Mist & Bloom order request ${reference}`;
     const submitButton = form.querySelector('.submit-order');
     const originalButton = submitButton.innerHTML;
     submitButton.disabled = true;
